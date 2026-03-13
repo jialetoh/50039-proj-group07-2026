@@ -57,7 +57,7 @@ Download the dataset and place the `cable/` folder inside the `data/` folder (se
 2. Download the dataset and place it in the correct folder (see Dataset section)
 3. Run the notebooks in sequence
 
-#### Requirements
+### Requirements
 - Python 3 (tested on v3.13.4)
 - OpenCV (tested on 4.13.0)
 - PyTorch (tested on 2.10.0)
