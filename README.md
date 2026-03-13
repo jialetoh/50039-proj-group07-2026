@@ -48,7 +48,7 @@ Download the dataset and place the `cable/` folder inside the `data/` folder (se
 ├── outputs/			       # generated outputs
 │   ├── figures/
 │   └── sample_outputs/
-└── pdf/                           # pdf files for submission
+└── pdf/                       # pdf files for submission
 ```
 
 ## Project Setup
