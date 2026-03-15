@@ -47,9 +47,10 @@ Download the dataset and place the `cable/` folder inside the `data/` folder (se
 │   └── utils.py               # helper functions      
 ├── checkpoints/ 		       # saved weights 
 ├── outputs/   	       		   # generated outputs
-├── figures/				   # figures and graphics for report
+├── figures/				   # figures & graphics for report
 └── pdf/                       # pdf files for submission
 ```
+
 
 ## Project Setup
 
