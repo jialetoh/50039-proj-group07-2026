@@ -23,6 +23,7 @@ Download the dataset and place the `cable/` folder inside the `data/` folder (se
 ## Project Directory
 
 ```text
+50039-proj-group07-2026/
 ├── README.md
 ├── requirements.txt
 ├── .gitignore
@@ -45,9 +46,8 @@ Download the dataset and place the `cable/` folder inside the `data/` folder (se
 │   ├── metrics.py 			   # evaluation metrics
 │   └── utils.py               # helper functions      
 ├── checkpoints/ 		       # saved weights 
-├── outputs/			       # generated outputs
-│   ├── figures/
-│   └── sample_outputs/
+├── outputs/   	       		   # generated outputs
+├── figures/				   # figures and graphics for report
 └── pdf/                       # pdf files for submission
 ```
 
