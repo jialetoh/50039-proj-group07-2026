@@ -55,11 +55,12 @@ Download the dataset and place the `cable/` folder inside the `data/` folder (se
 ## Project Setup
 
 #### Requirements
-- Python 3 (tested on v3.13.4)
+- Python 3 (tested on 3.13.4)
+- Pillow (tested on 12.1.0)
 - OpenCV (tested on 4.13.0)
 - PyTorch (tested on 2.10.0)
-- Matplotlib (tested on v3.10.8)
-- Numpy (tested on v2.4.1)
+- Matplotlib (tested on 3.10.8)
+- Numpy (tested on 2.4.1)
 
 1. Install required dependencies `pip install -r requirements.txt`
 2. Download the dataset and place it in the correct folder (see Dataset section)
