@@ -5,9 +5,6 @@ from torchvision import transforms
 
 from utils import TRAIN_DIR, TEST_DIR, set_seed
 
-# ImageNet normalization constants
-_IMAGENET_MEAN = [0.485, 0.456, 0.406]
-_IMAGENET_STD  = [0.229, 0.224, 0.225]
 _IMG_EXTS = ("*.png", "*.jpg", "*.jpeg", "*.bmp", "*.tif", "*.tiff")
 
 
@@ -88,7 +85,6 @@ def get_train_transform():
         transforms.ColorJitter(brightness=0.05, contrast=0.05,
                                saturation=0.05, hue=0.05),
         transforms.ToTensor(),
-        transforms.Normalize(mean=_IMAGENET_MEAN, std=_IMAGENET_STD),
     ])
 
 
@@ -96,7 +92,6 @@ def get_eval_transform():
     return transforms.Compose([
         transforms.Resize((256, 256)),
         transforms.ToTensor(),
-        transforms.Normalize(mean=_IMAGENET_MEAN, std=_IMAGENET_STD),
     ])
 
 

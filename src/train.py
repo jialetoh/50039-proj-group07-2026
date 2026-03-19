@@ -1,7 +1,9 @@
 import torch
 import torch.optim as optim
+from torchmetrics.functional import structural_similarity_index_measure
 
 from dataset import get_dataloaders
+from masking import generate_cable_mask, masked_mae_loss, masked_ssim_loss
 from models import ConvAutoencoder
 from utils import CHECKPOINTS_DIR, set_seed
 
@@ -11,6 +13,8 @@ LR = 1e-3
 BATCH_SIZE = 16
 VAL_SPLIT = 0.15
 SEED = 42
+MAE_WEIGHT = 0.85
+USE_MASKING = True
 
 
 def main():
@@ -25,7 +29,7 @@ def main():
 	)
 
 	model = ConvAutoencoder().to(device)
-	criterion = torch.nn.L1Loss()  # MAE loss
+	mae_criterion = torch.nn.L1Loss()  # used only when USE_MASKING=False
 	optimizer = optim.Adam(model.parameters(), lr=LR)
 
 	train_losses = []
@@ -38,7 +42,16 @@ def main():
 			imgs = imgs.to(device)
 			optimizer.zero_grad()
 			recon = model(imgs)
-			loss = criterion(recon, imgs)
+			if USE_MASKING:
+				mask = generate_cable_mask(imgs)
+				loss_mae = masked_mae_loss(recon, imgs, mask)
+				loss_ssim = masked_ssim_loss(recon, imgs, mask)
+			else:
+				loss_mae = mae_criterion(recon, imgs)
+				loss_ssim = 1.0 - structural_similarity_index_measure(
+					recon, imgs, data_range=1.0,
+				)
+			loss = MAE_WEIGHT * loss_mae + (1.0 - MAE_WEIGHT) * loss_ssim
 			loss.backward()
 			optimizer.step()
 			running_loss += loss.item() * imgs.size(0)
@@ -50,7 +63,17 @@ def main():
 			for imgs in val_loader:
 				imgs = imgs.to(device)
 				recon = model(imgs)
-				running_val += criterion(recon, imgs).item() * imgs.size(0)
+				if USE_MASKING:
+					mask = generate_cable_mask(imgs)
+					val_mae = masked_mae_loss(recon, imgs, mask)
+					val_ssim = masked_ssim_loss(recon, imgs, mask)
+				else:
+					val_mae = mae_criterion(recon, imgs)
+					val_ssim = 1.0 - structural_similarity_index_measure(
+						recon, imgs, data_range=1.0,
+					)
+				val_loss = MAE_WEIGHT * val_mae + (1.0 - MAE_WEIGHT) * val_ssim
+				running_val += val_loss.item() * imgs.size(0)
 		val_loss = running_val / len(val_loader.dataset)
 
 		train_losses.append(train_loss)
@@ -65,7 +88,8 @@ def main():
 	print("Training complete.")
 
 	CHECKPOINTS_DIR.mkdir(parents=True, exist_ok=True)
-	ckpt_path = CHECKPOINTS_DIR / "baseline_autoencoder.pth"
+	ckpt_name = "masked_autoencoder.pth" if USE_MASKING else "baseline_autoencoder.pth"
+	ckpt_path = CHECKPOINTS_DIR / ckpt_name
 	torch.save(model.state_dict(), ckpt_path)
 	print(f"Checkpoint saved to {ckpt_path}")
 
