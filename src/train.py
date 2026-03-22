@@ -1,6 +1,6 @@
 import torch
 import torch.optim as optim
-from torchmetrics.functional import structural_similarity_index_measure
+from torchmetrics.image import StructuralSimilarityIndexMeasure
 
 from dataset import get_dataloaders
 from masking import generate_cable_mask, masked_mae_loss, masked_ssim_loss
@@ -31,6 +31,7 @@ def main():
 	model = ConvAutoencoder().to(device)
 	mae_criterion = torch.nn.L1Loss()  # used only when USE_MASKING=False
 	optimizer = optim.Adam(model.parameters(), lr=LR)
+	ssim_fn = StructuralSimilarityIndexMeasure(data_range=1.0, kernel_size=11).to(device)
 
 	train_losses = []
 	val_losses = []
@@ -48,9 +49,7 @@ def main():
 				loss_ssim = masked_ssim_loss(recon, imgs, mask)
 			else:
 				loss_mae = mae_criterion(recon, imgs)
-				loss_ssim = 1.0 - structural_similarity_index_measure(
-					recon, imgs, data_range=1.0,
-				)
+				loss_ssim = 1.0 - ssim_fn(recon, imgs)
 			loss = MAE_WEIGHT * loss_mae + (1.0 - MAE_WEIGHT) * loss_ssim
 			loss.backward()
 			optimizer.step()
@@ -69,9 +68,7 @@ def main():
 					val_ssim = masked_ssim_loss(recon, imgs, mask)
 				else:
 					val_mae = mae_criterion(recon, imgs)
-					val_ssim = 1.0 - structural_similarity_index_measure(
-						recon, imgs, data_range=1.0,
-					)
+					val_ssim = 1.0 - ssim_fn(recon, imgs)
 				val_loss = MAE_WEIGHT * val_mae + (1.0 - MAE_WEIGHT) * val_ssim
 				running_val += val_loss.item() * imgs.size(0)
 		val_loss = running_val / len(val_loader.dataset)

@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import torch
-from torchmetrics.functional import structural_similarity_index_measure
+from torchmetrics.image import StructuralSimilarityIndexMeasure
 
 SAT_THRESHOLD = 0.15
 CLOSING_KSIZE = 7
@@ -98,9 +98,10 @@ def masked_ssim_loss(
     """
     masked_recon = recon * mask
     masked_target = target * mask
-    return 1.0 - structural_similarity_index_measure(
-        masked_recon, masked_target, data_range=1.0
-    )
+    ssim_fn = StructuralSimilarityIndexMeasure(
+        data_range=1.0, kernel_size=11
+    ).to(masked_recon.device)
+    return 1.0 - ssim_fn(masked_recon, masked_target)
 
 
 def compute_masked_error_map(

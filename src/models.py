@@ -44,14 +44,14 @@ class ConvAutoencoder(nn.Module):
             nn.ReLU(inplace=True),
             nn.MaxPool2d(kernel_size=2, stride=2),
             
-            # Squeeze bottleneck channels: 32x32x64 → 32x32x16
-            nn.Conv2d(64, 16, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
+        #     # Squeeze bottleneck channels: 32x32x64 → 32x32x16
+        #     nn.Conv2d(64, 16, kernel_size=3, padding=1),
+        #     nn.ReLU(inplace=True),
         )
 
         self.decoder = nn.Sequential(
-            # DeConv3: 32x32x16 → 64x64x32
-            nn.ConvTranspose2d(16, 32, kernel_size=3, stride=2,
+            # DeConv3: 32x32x64 → 64x64x32
+            nn.ConvTranspose2d(64, 32, kernel_size=3, stride=2,
                                padding=1, output_padding=1),
             nn.BatchNorm2d(32),
             nn.ReLU(inplace=True),
