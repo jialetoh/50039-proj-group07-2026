@@ -61,6 +61,7 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
+notebooks/test_results.pkl
 
 # Translations
 *.mo
