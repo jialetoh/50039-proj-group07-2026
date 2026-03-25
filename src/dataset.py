@@ -99,7 +99,7 @@ def get_eval_transform():
 # 3. DataLoader factory
 # ==========================================
 
-def get_dataloaders(batch_size: int = 16, val_split: float = 0.15, seed: int = 42):
+def get_dataloaders(batch_size: int = 16, val_split: float = 0.15, seed: int = 42, augment=True):
     """
     Returns (train_loader, val_loader, test_loader).
 
@@ -126,11 +126,14 @@ def get_dataloaders(batch_size: int = 16, val_split: float = 0.15, seed: int = 4
     indices = list(range(n_total))
     train_indices, val_indices = random_split(indices, [n_train, n_val],
                                               generator=generator)
+    
+    train_transform = get_train_transform() if augment else get_eval_transform()
 
     train_ds = torch.utils.data.Subset(
-        CableDataset(all_paths, transform=get_train_transform()),
+        CableDataset(all_paths, transform=train_transform),
         list(train_indices),
     )
+
     val_ds = torch.utils.data.Subset(
         CableDataset(all_paths, transform=get_eval_transform()),
         list(val_indices),
