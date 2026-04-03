@@ -19,7 +19,7 @@ class ResNetAutoencoder(nn.Module):
             raise ValueError("bottleneck_width must be >= 16")
 
         resnet = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
-        self.encoder = nn.Sequential(*list(resnet.children())[:-3])
+        self.encoder = nn.Sequential(*list(resnet.children())[:7])
 
         if freeze_encoder:
             for param in self.encoder.parameters():
