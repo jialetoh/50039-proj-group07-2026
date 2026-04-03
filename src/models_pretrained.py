@@ -35,6 +35,7 @@ class ResNetAutoencoder(nn.Module):
         ch2 = max(16, bottleneck_width // 2)
         ch3 = max(16, bottleneck_width // 4)
         ch4 = max(16, bottleneck_width // 8)
+        ch5 = max(16, bottleneck_width // 16)
 
         self.decoder = nn.Sequential(
             # 16x16 -> 32x32
@@ -58,7 +59,7 @@ class ResNetAutoencoder(nn.Module):
             nn.LeakyReLU(inplace=True),
 
             # Channel projection at full resolution
-            nn.Conv2d(16, 3, kernel_size=3, padding=1),
+            nn.Conv2d(ch5, 3, kernel_size=3, padding=1),
             nn.Sigmoid(),
         )
 
