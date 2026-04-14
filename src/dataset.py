@@ -5,9 +5,6 @@ from torchvision import transforms
 
 from utils import TRAIN_DIR, TEST_DIR, set_seed
 
-# ImageNet normalization constants
-_IMAGENET_MEAN = [0.485, 0.456, 0.406]
-_IMAGENET_STD  = [0.229, 0.224, 0.225]
 _IMG_EXTS = ("*.png", "*.jpg", "*.jpeg", "*.bmp", "*.tif", "*.tiff")
 
 
@@ -88,7 +85,6 @@ def get_train_transform():
         transforms.ColorJitter(brightness=0.05, contrast=0.05,
                                saturation=0.05, hue=0.05),
         transforms.ToTensor(),
-        transforms.Normalize(mean=_IMAGENET_MEAN, std=_IMAGENET_STD),
     ])
 
 
@@ -96,7 +92,6 @@ def get_eval_transform():
     return transforms.Compose([
         transforms.Resize((256, 256)),
         transforms.ToTensor(),
-        transforms.Normalize(mean=_IMAGENET_MEAN, std=_IMAGENET_STD),
     ])
 
 
@@ -104,7 +99,7 @@ def get_eval_transform():
 # 3. DataLoader factory
 # ==========================================
 
-def get_dataloaders(batch_size: int = 16, val_split: float = 0.15, seed: int = 42):
+def get_dataloaders(batch_size: int = 16, val_split: float = 0.15, seed: int = 42, augment=True):
     """
     Returns (train_loader, val_loader, test_loader).
 
@@ -131,11 +126,14 @@ def get_dataloaders(batch_size: int = 16, val_split: float = 0.15, seed: int = 4
     indices = list(range(n_total))
     train_indices, val_indices = random_split(indices, [n_train, n_val],
                                               generator=generator)
+    
+    train_transform = get_train_transform() if augment else get_eval_transform()
 
     train_ds = torch.utils.data.Subset(
-        CableDataset(all_paths, transform=get_train_transform()),
+        CableDataset(all_paths, transform=train_transform),
         list(train_indices),
     )
+
     val_ds = torch.utils.data.Subset(
         CableDataset(all_paths, transform=get_eval_transform()),
         list(val_indices),

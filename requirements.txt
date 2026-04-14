@@ -4,3 +4,9 @@ opencv-python
 Pillow
 torch
 torchvision
+torchmetrics
+scikit-learn
+modal
+jupyter
+ipykernel
+nbconvert
