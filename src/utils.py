@@ -25,10 +25,24 @@ CHECKPOINTS_DIR = PROJECT_ROOT / "checkpoints"
 # 2. Helper Functions
 # ==========================================
 def set_seed(seed: int = 42):
-    """Sets the seed for reproducibility across the entire project."""
+    """Set the seed for reproducibility."""
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
+    
+    # Device-specific seed setting
     if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed)
         torch.cuda.manual_seed_all(seed)
+        # Force deterministic algorithms on CUDA
+        torch.cudnn.deterministic = True
+        torch.cudnn.benchmark = False
+    elif torch.mps.is_available():
+        torch.mps.manual_seed(seed)
 
+
+def get_device():
+    """Check for CUDA or MPS for Apple Silicon."""
+    device = torch.device("cuda") if torch.cuda.is_available() else "mps" if torch.mps.is_available() else "cpu"
+    print(f"Using device: {device}")
+    return device
