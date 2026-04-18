@@ -228,3 +228,5 @@ Desktop.ini
 # General
 *.swp
 *~
+.modalignore
+.claude
