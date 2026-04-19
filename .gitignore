@@ -4,10 +4,10 @@ data/cable/*
 outputs/sample_outputs/
 
 # Trained Models & Checkpoints - just comment out this entire section if model filesizes are small
-*.pth
-*.pt
-checkpoints/*
-!checkpoints/.gitkeep
+# *.pth
+# *.pt
+# checkpoints/*
+# !checkpoints/.gitkeep
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
