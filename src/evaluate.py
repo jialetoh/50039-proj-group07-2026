@@ -7,6 +7,107 @@ from pathlib import Path
 from src.utils import tensor_to_img
 
 
+def plot_normal_reconstructions(original_tensors, recon_tensors, title="Normal Image Reconstruction", num_samples=4, save=False, save_path="normal_reconstruction.png"):
+    """
+    Plots original and reconstructed normal images side-by-side.
+    """
+    original_cpu = original_tensors.cpu()
+    recon_cpu = recon_tensors.cpu()
+    
+    # Ensure we don't try to plot more samples than exist in the batch
+    actual_samples = min(num_samples, original_cpu.shape[0])
+    
+    fig, axes = plt.subplots(2, actual_samples, figsize=(3 * actual_samples, 6))
+    
+    for i in range(actual_samples):
+        # Original Input
+        ax_in = axes[0, i]
+        ax_in.imshow(tensor_to_img(original_cpu[i]))
+        ax_in.axis("off")
+        
+        # Reconstructed Output
+        ax_out = axes[1, i]
+        ax_out.imshow(tensor_to_img(recon_cpu[i]))
+        ax_out.axis("off")
+        
+        if i == 0:
+            ax_in.text(-0.05, 0.5, "Original\n(Normal)", fontsize=14, ha='right', va='center', transform=ax_in.transAxes)
+            ax_out.text(-0.05, 0.5, "Reconstructed", fontsize=14, ha='right', va='center', transform=ax_out.transAxes)
+
+    fig.suptitle(title, fontsize=18)
+    plt.tight_layout()
+    
+    if save:
+        Path(save_path).parent.mkdir(parents=True, exist_ok=True)
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        print(f"Reconstruction plot saved to {save_path}")
+        
+    plt.show()
+
+
+def plot_anomalous_reconstructions(model, dataset, device, title="Defect Reconstruction", save=False, save_path="defect_reconstruction.png"):
+    """
+    Grabs one anomalous image from each category in the dataset, passes it through the model,
+    and plots the original vs reconstructed images side-by-side.
+    """
+    # Bypass the un-shuffled test loader to grab one anomalous image from each category
+    defect_samples = {}
+    for i, (img_path, _, label) in enumerate(dataset.samples):
+        if label == 1:  # Only plot anomalies
+            category_name = Path(img_path).parent.name
+            if category_name not in defect_samples:
+                defect_samples[category_name] = i
+            
+            if len(defect_samples) == 8: # Stop once we have all 8 categories
+                break
+
+    num_categories = len(defect_samples)
+    fig, axes = plt.subplots(num_categories, 2, figsize=(8, 3 * num_categories))
+
+    for row, (category, idx) in enumerate(defect_samples.items()):
+        # Get image and move to device
+        img, mask, label = dataset[idx]
+        img_tensor = img.unsqueeze(0).to(device) # Add batch dimension
+        
+        # Reconstruct
+        with torch.no_grad():
+            recon_tensor = model(img_tensor)
+            
+        # Convert to NumPy for plotting
+        img_np = tensor_to_img(img)
+        recon_np = tensor_to_img(recon_tensor.squeeze(0).cpu())
+        
+        # Plot Original
+        ax_in = axes[row, 0]
+        ax_in.imshow(img_np)
+        ax_in.axis("off")
+        
+        # Plot Reconstructed
+        ax_out = axes[row, 1]
+        ax_out.imshow(recon_np)
+        ax_out.axis("off")
+        
+        # Add Row Labels (Category Name)
+        clean_category_name = category.replace('_', ' ').title()
+        ax_in.text(-0.05, 0.5, clean_category_name, fontsize=12,
+                   ha='right', va='center', transform=ax_in.transAxes)
+        
+        # Add Column Headers on the first row
+        if row == 0:
+            ax_in.set_title("Original (Defect)", fontsize=12, pad=10)
+            ax_out.set_title("Reconstructed", fontsize=12, pad=10)
+
+    fig.suptitle(title, fontsize=14, y=1)
+    plt.tight_layout()
+    
+    if save:
+        Path(save_path).parent.mkdir(parents=True, exist_ok=True)
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        print(f"Defect reconstruction plot saved to {save_path}")
+        
+    plt.show()
+
+
 def generate_anomaly_maps(model, dataloader, device):
     """
     Runs inference on the dataloader and generates pixel-wise anomaly maps.

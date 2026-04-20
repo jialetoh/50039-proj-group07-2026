@@ -35,8 +35,8 @@ def set_seed(seed: int = 42):
         torch.cuda.manual_seed(seed)
         torch.cuda.manual_seed_all(seed)
         # Force deterministic algorithms on CUDA
-        torch.cudnn.deterministic = True
-        torch.cudnn.benchmark = False
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
     elif torch.mps.is_available():
         torch.mps.manual_seed(seed)
 
