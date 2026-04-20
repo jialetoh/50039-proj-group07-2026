@@ -1,5 +1,7 @@
 import torch
 import torch.nn as nn
+from torchvision.models import resnet18, ResNet18_Weights
+from torchvision.transforms import Normalize
 
 class Autoencoder3Block(nn.Module):
     """
@@ -322,4 +324,77 @@ class Autoencoder6Block(nn.Module):
         return self.decoder(self.encoder(x))
 
 
+class AutoencoderResNet18(nn.Module):
+    def __init__(self, freeze_encoder=True):
+        """
+        Autoencoder with pre-trained ResNet18 backbone.
+        Encoder weights frozen by default with `freeze_encoder=True`.
+        """
+        super().__init__()
+        
+        # ImageNet Normalization so the model accepts standard [0, 1] tensors
+        self.normalize = Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        
+        # ==========================================
+        # Pre-trained Encoder (ResNet18)
+        # ==========================================
+        resnet = resnet18(weights=ResNet18_Weights.IMAGENET1K_V1)
+        
+        # Extract all convolutional layers only so our output is a feature map
+        # Last two layers are avgpool and fc, which we don't want
+        # Output feature map is [B, 512, 8, 8] for a 256x256 input
+        self.encoder = nn.Sequential(*list(resnet.children())[:-2])
+        
+        if freeze_encoder:
+            for param in self.encoder.parameters():
+                param.requires_grad = False
+        
+        # ==========================================
+        # Decoder
+        # ==========================================
+        self.decoder = nn.Sequential(
+            # Block 1: 512x8x8 -> 256x16x16
+            nn.ConvTranspose2d(512, 256, kernel_size=3, stride=2, padding=1, output_padding=1),
+            nn.BatchNorm2d(256),
+            nn.ReLU(True),
+            
+            # Block 2: 256x16x16 -> 128x32x32
+            nn.ConvTranspose2d(256, 128, kernel_size=3, stride=2, padding=1, output_padding=1),
+            nn.BatchNorm2d(128),
+            nn.ReLU(True),
+            
+            # Block 3: 128x32x32 -> 64x64x64
+            nn.ConvTranspose2d(128, 64, kernel_size=3, stride=2, padding=1, output_padding=1),
+            nn.BatchNorm2d(64),
+            nn.ReLU(True),
+            
+            # Block 4: 64x64x64 -> 32x128x128
+            nn.ConvTranspose2d(64, 32, kernel_size=3, stride=2, padding=1, output_padding=1),
+            nn.BatchNorm2d(32),
+            nn.ReLU(True),
+            
+            # Block 5: 32x128x128 -> 3x256x256
+            nn.ConvTranspose2d(32, 3, kernel_size=3, stride=2, padding=1, output_padding=1),
+            nn.Sigmoid()
+        )
+
+    def forward(self, x):
+        norm_x = self.normalize(x)  # Normalize [0, 1] image tensor from the dataloader
+        features = self.encoder(norm_x)  
+        reconstructed = self.decoder(features) 
+        return reconstructed
+
+    def unfreeze_top_encoder_layers(self):
+        """
+        Unfreeze the last stage of the ResNet18 encoder (layer4)
+        to allow for fine-tuning for this dataset.
+        """
+        # 0 = conv1, 1 = bn1, 2 = relu, 3 = maxpool,
+        # 4 = layer1, 5 = layer2, 6 = layer3, 7 = layer4
+        top_layer = self.encoder[7] 
+        
+        for param in top_layer.parameters():
+            param.requires_grad = True # Unfreeze
+            
+        print("ResNet18 'layer4' has been unfrozen for fine-tuning.")
 
