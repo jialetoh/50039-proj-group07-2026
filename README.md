@@ -35,8 +35,8 @@ Download the dataset and place the `cable/` folder inside the `data/` folder (se
 ├── notebooks/
 │   ├── 01_data_exploration.ipynb
 │   ├── 02_baseline_autoencoder.ipynb
-│   ├── 03_pretrained_encoder.ipynb
-│   ├── 04_augmentation_and_tuning.ipynb
+│   ├── 03_autoencoder_4block.ipynb
+│   ├── 04_autoencoder_pretrained.ipynb
 │   └── 05_final_report.ipynb
 ├── src/
 │   ├── dataset.py             # dataset loading & preprocessing
