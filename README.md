@@ -67,6 +67,17 @@ Download the dataset and place the `cable/` folder inside the `data/` folder (se
 3. Run the notebooks in sequence
 
 
+## Git LFS
+
+This repository uses Git LFS as the report is 200MBs (and model checkpoints are 270MB in total).
+
+Before cloning or pulling, install Git LFS and run:
+
+```bash
+git lfs install
+git lfs pull
+```
+
 ## References
 
 - Paul Bergmann, Michael Fauser, David Sattlegger, and Carsten Steger, "A Comprehensive Real-World Dataset for Unsupervised Anomaly Detection", IEEE Conference on Computer Vision and Pattern Recognition, 2019
